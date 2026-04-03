@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Contractor Lead Cost Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  .pldn-calc-wrapper {
+    --gold: #D4A843;
+    --gold-light: #E8C96A;
+    --gold-dark: #B8902E;
+    --black: #0D0D0D;
+    --black-soft: #1A1A1A;
+    --black-card: #141414;
+    --white: #F5F2ED;
+    --white-pure: #FFFFFF;
+    --gray: #8A8A8A;
+    --green: #34D399;
+    --red-soft: #F87171;
+
+    font-family: 'DM Sans', sans-serif;
+    max-width: 680px;
+    margin: 0 auto;
+    color: var(--white);
+    background: transparent;
+  }
+
+  .pldn-calc-wrapper * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* ── CALCULATOR CARD ── */
+  .pldn-calc-card {
+    background: var(--black-card);
+    border: 1px solid rgba(212, 168, 67, 0.12);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .pldn-calc-header {
+    padding: 28px 32px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .pldn-calc-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin: 0;
+  }
+  .pldn-calc-header p {
+    font-size: 13px;
+    color: var(--gray);
+    margin-top: 4px;
+  }
+
+  .pldn-calc-body { padding: 32px; }
+
+  /* Steps */
+  .pldn-step { margin-bottom: 28px; }
+  .pldn-step:last-child { margin-bottom: 0; }
+  .pldn-step-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .pldn-step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(212, 168, 67, 0.12);
+    color: var(--gold);
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .pldn-step-label span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  /* Select & Input */
+  .pldn-calc-wrapper select,
+  .pldn-calc-wrapper input[type="number"] {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--black-soft);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.3s;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .pldn-calc-wrapper select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23D4A843' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+    cursor: pointer;
+  }
+  .pldn-calc-wrapper select:focus,
+  .pldn-calc-wrapper input[type="number"]:focus {
+    border-color: var(--gold);
+    color: var(--white);
+  }
+  .pldn-calc-wrapper input[type="number"]:active,
+  .pldn-calc-wrapper input[type="number"]:focus-within,
+  .pldn-calc-wrapper input[type="number"]:-webkit-autofill {
+    color: var(--white);
+    -webkit-text-fill-color: var(--white);
+  }
+  .pldn-calc-wrapper select option {
+    background: var(--black-soft);
+    color: var(--white);
+  }
+  .pldn-calc-wrapper input[type="number"]::-webkit-inner-spin-button,
+  .pldn-calc-wrapper input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+  .pldn-calc-wrapper input[type="number"] { -moz-appearance: textfield; }
+
+  .pldn-input-hint {
+    font-size: 12px;
+    color: var(--gray);
+    margin-top: 6px;
+  }
+
+  /* Toggle buttons */
+  .pldn-toggle-group {
+    display: flex;
+    gap: 10px;
+  }
+  .pldn-toggle-btn {
+    flex: 1;
+    padding: 14px 16px;
+    background: var(--black-soft);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    color: var(--gray);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s;
+    text-align: center;
+  }
+  .pldn-toggle-btn:hover {
+    border-color: rgba(212, 168, 67, 0.3);
+    color: var(--white);
+  }
+  .pldn-toggle-btn.active {
+    background: rgba(212, 168, 67, 0.1);
+    border-color: var(--gold);
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* CTA Button */
+  .pldn-calc-cta { margin-top: 32px; }
+  .pldn-btn-calculate {
+    width: 100%;
+    padding: 18px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    border: none;
+    border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 20px;
+    letter-spacing: 2px;
+    color: var(--black);
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  .pldn-btn-calculate:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(212, 168, 67, 0.25);
+  }
+  .pldn-btn-calculate:active { transform: translateY(0); }
+
+  /* ── RESULTS ── */
+  .pldn-results {
+    display: none;
+    margin-top: 24px;
+    animation: pldnFadeUp 0.6s ease-out;
+  }
+  .pldn-results.visible { display: block; }
+
+  @keyframes pldnFadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .pldn-results-card {
+    background: var(--black-card);
+    border: 1px solid rgba(212, 168, 67, 0.15);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .pldn-results-header {
+    padding: 28px 32px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .pldn-results-header h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    margin: 0;
+  }
+  .pldn-trade-tag {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--white);
+    background: rgba(255,255,255,0.08);
+    padding: 6px 14px;
+    border-radius: 100px;
+  }
+
+  .pldn-results-body { padding: 32px; }
+
+  /* Stat grid */
+  .pldn-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+  .pldn-stat-box {
+    background: var(--black-soft);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+  .pldn-stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    letter-spacing: 1px;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .pldn-stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--gray);
+  }
+
+  /* ROI callout */
+  .pldn-roi-callout {
+    background: linear-gradient(135deg, rgba(212, 168, 67, 0.08), rgba(212, 168, 67, 0.03));
+    border: 1px solid rgba(212, 168, 67, 0.2);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .pldn-roi-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .pldn-roi-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--white-pure);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .pldn-roi-sub {
+    font-size: 13px;
+    color: var(--gray);
+  }
+
+  /* Insight blocks */
+  .pldn-insight-block {
+    background: var(--black-soft);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .pldn-insight-block h3 {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+  .pldn-insight-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .pldn-insight-row:last-child { border-bottom: none; }
+  .pldn-insight-row .pldn-label { font-size: 14px; color: var(--gray); }
+  .pldn-insight-row .pldn-value { font-size: 14px; font-weight: 600; color: var(--white); }
+  .pldn-insight-row .pldn-value.highlight { color: var(--gold); }
+  .pldn-insight-row .pldn-value.green { color: var(--green); }
+
+  /* Disclaimer */
+  .pldn-disclaimer {
+    font-size: 12px;
+    color: var(--gray);
+    line-height: 1.6;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  /* Results CTA */
+  .pldn-results-cta {
+    padding: 28px 32px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    text-align: center;
+    background: rgba(212, 168, 67, 0.03);
+  }
+  .pldn-results-cta p {
+    font-size: 15px;
+    color: var(--white);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .pldn-results-cta p strong { color: var(--gold); }
+  .pldn-btn-book {
+    display: inline-block;
+    padding: 16px 48px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    border: none;
+    border-radius: 10px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--black);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s;
+  }
+  .pldn-btn-book:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 32px rgba(212, 168, 67, 0.25);
+  }
+  .pldn-btn-recalc {
+    display: inline-block;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--gray);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    background: none;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    transition: color 0.3s;
+  }
+  .pldn-btn-recalc:hover { color: var(--white); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .pldn-calc-body, .pldn-results-body { padding: 24px; }
+    .pldn-calc-header, .pldn-results-header { padding: 24px 24px 20px; }
+    .pldn-stat-grid { grid-template-columns: 1fr; gap: 10px; }
+    .pldn-stat-value { font-size: 30px; }
+    .pldn-toggle-group { flex-direction: column; gap: 8px; }
+    .pldn-results-header { flex-direction: column; gap: 12px; align-items: flex-start; }
+    .pldn-results-cta { padding: 24px 20px; }
+    .pldn-insight-row { flex-direction: column; align-items: flex-start; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="pldn-calc-wrapper">
+
+  <!-- ═══ CALCULATOR ═══ -->
+  <div class="pldn-calc-card">
+    <div class="pldn-calc-header">
+      <h2>LEAD COST CALCULATOR</h2>
+      <p>Takes about 30 seconds — no email required</p>
+    </div>
+    <div class="pldn-calc-body">
+
+      <div class="pldn-step">
+        <div class="pldn-step-label">
+          <div class="pldn-step-number">1</div>
+          <span>What's your trade?</span>
+        </div>
+        <select id="pldn-trade">
+          <option value="">Select your trade...</option>
+          <option value="hvac">HVAC</option>
+          <option value="plumbing">Plumbing</option>
+          <option value="roofing">Roofing</option>
+          <option value="electrical">Electrical</option>
+          <option value="painting">Painting</option>
+          <option value="remodeling">Remodeling / General Contracting</option>
+          <option value="landscaping">Landscaping</option>
+          <option value="cleaning">Cleaning / Maid Services</option>
+          <option value="flooring">Flooring</option>
+          <option value="fencing">Fencing</option>
+          <option value="concrete">Concrete</option>
+          <option value="pressure_washing">Pressure Washing</option>
+          <option value="junk_removal">Junk Removal</option>
+          <option value="garage_door">Garage Door</option>
+          <option value="handyman">Handyman</option>
+          <option value="tree_service">Tree Service</option>
+          <option value="pest_control">Pest Control</option>
+          <option value="windows_doors">Windows & Doors</option>
+          <option value="other">Other Home Service</option>
+        </select>
+      </div>
+
+      <div class="pldn-step">
+        <div class="pldn-step-label">
+          <div class="pldn-step-number">2</div>
+          <span>How big is your service area?</span>
+        </div>
+        <div class="pldn-toggle-group" id="pldn-marketSize">
+          <button class="pldn-toggle-btn" data-value="small" onclick="pldnSetToggle('pldn-marketSize', this)">Small Market<br><span style="font-size:11px;color:#8A8A8A">Under 250K pop.</span></button>
+          <button class="pldn-toggle-btn" data-value="medium" onclick="pldnSetToggle('pldn-marketSize', this)">Mid-Size<br><span style="font-size:11px;color:#8A8A8A">250K – 1M pop.</span></button>
+          <button class="pldn-toggle-btn" data-value="large" onclick="pldnSetToggle('pldn-marketSize', this)">Major Metro<br><span style="font-size:11px;color:#8A8A8A">1M+ pop.</span></button>
+        </div>
+      </div>
+
+      <div class="pldn-step">
+        <div class="pldn-step-label">
+          <div class="pldn-step-number">3</div>
+          <span>What's your average job value?</span>
+        </div>
+        <input type="number" id="pldn-jobValue" placeholder="e.g. 3500" min="100" max="500000">
+        <div class="pldn-input-hint">Your typical revenue per completed job, before expenses.</div>
+      </div>
+
+      <div class="pldn-step">
+        <div class="pldn-step-label">
+          <div class="pldn-step-number">4</div>
+          <span>Monthly ad budget you'd consider?</span>
+        </div>
+        <select id="pldn-budget">
+          <option value="">Select a range...</option>
+          <option value="1000">$500 – $1,500/mo</option>
+          <option value="2500">$1,500 – $3,500/mo</option>
+          <option value="5000">$3,500 – $7,500/mo</option>
+          <option value="10000">$7,500 – $15,000/mo</option>
+          <option value="20000">$15,000+/mo</option>
+        </select>
+      </div>
+
+      <div class="pldn-step">
+        <div class="pldn-step-label">
+          <div class="pldn-step-number">5</div>
+          <span>Are you currently running paid ads?</span>
+        </div>
+        <div class="pldn-toggle-group" id="pldn-runningAds">
+          <button class="pldn-toggle-btn" data-value="yes" onclick="pldnSetToggle('pldn-runningAds', this)">Yes, currently running</button>
+          <button class="pldn-toggle-btn" data-value="no" onclick="pldnSetToggle('pldn-runningAds', this)">No, not yet</button>
+        </div>
+      </div>
+
+      <div class="pldn-calc-cta">
+        <button class="pldn-btn-calculate" onclick="pldnCalculate()">SHOW ME MY NUMBERS</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ RESULTS ═══ -->
+  <div class="pldn-results" id="pldn-results">
+    <div class="pldn-results-card">
+      <div class="pldn-results-header">
+        <h2>YOUR LEAD COST BREAKDOWN</h2>
+        <div class="pldn-trade-tag" id="pldn-resultsTrade"></div>
+      </div>
+      <div class="pldn-results-body">
+
+        <div class="pldn-stat-grid">
+          <div class="pldn-stat-box">
+            <div class="pldn-stat-value" id="pldn-statCPL">—</div>
+            <div class="pldn-stat-label">Est. Cost Per Lead</div>
+          </div>
+          <div class="pldn-stat-box">
+            <div class="pldn-stat-value" id="pldn-statLeads">—</div>
+            <div class="pldn-stat-label">Leads / Month</div>
+          </div>
+          <div class="pldn-stat-box">
+            <div class="pldn-stat-value" id="pldn-statJobs">—</div>
+            <div class="pldn-stat-label">Est. Booked Jobs</div>
+          </div>
+        </div>
+
+        <div class="pldn-roi-callout">
+          <div class="pldn-roi-label">Estimated Monthly Return on Ad Spend</div>
+          <div class="pldn-roi-value" id="pldn-roiValue">—</div>
+          <div class="pldn-roi-sub" id="pldn-roiSub"></div>
+        </div>
+
+        <div class="pldn-insight-block">
+          <h3>The Math Behind Your Numbers</h3>
+          <div class="pldn-insight-row">
+            <span class="pldn-label">Monthly ad spend</span>
+            <span class="pldn-value" id="pldn-rowBudget">—</span>
+          </div>
+          <div class="pldn-insight-row">
+            <span class="pldn-label">Avg. cost per lead (your trade + market)</span>
+            <span class="pldn-value highlight" id="pldn-rowCPL">—</span>
+          </div>
+          <div class="pldn-insight-row">
+            <span class="pldn-label">Estimated leads per month</span>
+            <span class="pldn-value" id="pldn-rowLeads">—</span>
+          </div>
+          <div class="pldn-insight-row">
+            <span class="pldn-label">Typical close rate (industry avg.)</span>
+            <span class="pldn-value" id="pldn-rowCloseRate">—</span>
+          </div>
+          <div class="pldn-insight-row">
+            <span class="pldn-label">Estimated booked jobs</span>
+            <span class="pldn-value" id="pldn-rowJobs">—</span>
+          </div>
+          <div class="pldn-insight-row">
+            <span class="pldn-label">Your avg. job value</span>
+            <span class="pldn-value" id="pldn-rowJobValue">—</span>
+          </div>
+          <div class="pldn-insight-row">
+            <span class="pldn-label">Estimated revenue from ads</span>
+            <span class="pldn-value green" id="pldn-rowRevenue">—</span>
+          </div>
+        </div>
+
+        <div class="pldn-insight-block" id="pldn-contextBlock">
+          <h3>What This Means For You</h3>
+          <p id="pldn-contextText" style="font-size:14px; line-height:1.7; color: #8A8A8A;"></p>
+        </div>
+
+        <div class="pldn-disclaimer">
+          Estimates based on 2025–2026 industry benchmarks from LocaliQ, SearchLight Digital, and WordStream. Actual results vary based on market competition, ad quality, landing page performance, and how quickly you follow up with leads. These numbers assume a well-managed campaign — not a set-it-and-forget-it approach.
+        </div>
+      </div>
+
+      <div class="pldn-results-cta">
+        <p>Want to know what <strong>your specific market</strong> looks like?<br>I'll pull your actual competitor data and show you exactly where the opportunity is.</p>
+        <a href="https://paladinppc.com/schedule/" class="pldn-btn-book" target="_blank">BOOK YOUR FREE STRATEGY CALL</a>
+        <br>
+        <button class="pldn-btn-recalc" onclick="pldnRecalculate()">← Adjust my numbers</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  const tradeData = {
+    hvac:             { baseCPL: 128, cplRange: [85, 175], closeRate: 0.35, tradeName: 'HVAC' },
+    plumbing:         { baseCPL: 129, cplRange: [80, 170], closeRate: 0.38, tradeName: 'Plumbing' },
+    roofing:          { baseCPL: 228, cplRange: [140, 320], closeRate: 0.22, tradeName: 'Roofing' },
+    electrical:       { baseCPL: 94, cplRange: [65, 140], closeRate: 0.33, tradeName: 'Electrical' },
+    painting:         { baseCPL: 138, cplRange: [85, 190], closeRate: 0.30, tradeName: 'Painting' },
+    remodeling:       { baseCPL: 166, cplRange: [110, 240], closeRate: 0.22, tradeName: 'Remodeling' },
+    landscaping:      { baseCPL: 85, cplRange: [50, 130], closeRate: 0.28, tradeName: 'Landscaping' },
+    cleaning:         { baseCPL: 47, cplRange: [30, 70], closeRate: 0.40, tradeName: 'Cleaning' },
+    flooring:         { baseCPL: 110, cplRange: [70, 160], closeRate: 0.25, tradeName: 'Flooring' },
+    fencing:          { baseCPL: 95, cplRange: [60, 140], closeRate: 0.28, tradeName: 'Fencing' },
+    concrete:         { baseCPL: 105, cplRange: [65, 155], closeRate: 0.25, tradeName: 'Concrete' },
+    pressure_washing: { baseCPL: 55, cplRange: [30, 85], closeRate: 0.38, tradeName: 'Pressure Washing' },
+    junk_removal:     { baseCPL: 60, cplRange: [35, 90], closeRate: 0.42, tradeName: 'Junk Removal' },
+    garage_door:      { baseCPL: 75, cplRange: [45, 115], closeRate: 0.35, tradeName: 'Garage Door' },
+    handyman:         { baseCPL: 54, cplRange: [35, 80], closeRate: 0.35, tradeName: 'Handyman' },
+    tree_service:     { baseCPL: 80, cplRange: [50, 120], closeRate: 0.30, tradeName: 'Tree Service' },
+    pest_control:     { baseCPL: 65, cplRange: [40, 95], closeRate: 0.35, tradeName: 'Pest Control' },
+    windows_doors:    { baseCPL: 200, cplRange: [130, 280], closeRate: 0.20, tradeName: 'Windows & Doors' },
+    other:            { baseCPL: 91, cplRange: [55, 140], closeRate: 0.28, tradeName: 'Home Services' }
+  };
+
+  const marketMultiplier = { small: 0.8, medium: 1.0, large: 1.25 };
+
+  let selectedMarket = null;
+  let selectedAds = null;
+
+  window.pldnSetToggle = function(groupId, btn) {
+    const group = document.getElementById(groupId);
+    group.querySelectorAll('.pldn-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    if (groupId === 'pldn-marketSize') selectedMarket = btn.dataset.value;
+    if (groupId === 'pldn-runningAds') selectedAds = btn.dataset.value;
+  };
+
+  window.pldnCalculate = function() {
+    const trade = document.getElementById('pldn-trade').value;
+    const jobValue = parseFloat(document.getElementById('pldn-jobValue').value);
+    const budget = parseFloat(document.getElementById('pldn-budget').value);
+
+    if (!trade || !selectedMarket || !jobValue || !budget || !selectedAds) {
+      alert('Please fill in all fields to see your results.');
+      return;
+    }
+
+    const data = tradeData[trade];
+    const multiplier = marketMultiplier[selectedMarket];
+
+    const adjustedCPL = Math.round(data.baseCPL * multiplier);
+    const cplLow = Math.round(data.cplRange[0] * multiplier);
+    const cplHigh = Math.round(data.cplRange[1] * multiplier);
+    const estLeads = Math.max(1, Math.round(budget / adjustedCPL));
+    const closeRate = selectedAds === 'yes' ? Math.min(data.closeRate + 0.05, 0.50) : data.closeRate;
+    const bookedJobs = Math.max(1, Math.round(estLeads * closeRate));
+    const estRevenue = bookedJobs * jobValue;
+    const roas = estRevenue / budget;
+
+    document.getElementById('pldn-resultsTrade').textContent = data.tradeName;
+    document.getElementById('pldn-statCPL').textContent = '$' + adjustedCPL;
+    document.getElementById('pldn-statLeads').textContent = estLeads;
+    document.getElementById('pldn-statJobs').textContent = bookedJobs;
+    document.getElementById('pldn-roiValue').textContent = roas.toFixed(1) + 'x';
+    document.getElementById('pldn-roiSub').textContent = 'Every $1 in ad spend could generate $' + roas.toFixed(2) + ' in revenue';
+    document.getElementById('pldn-rowBudget').textContent = '$' + budget.toLocaleString() + '/mo';
+    document.getElementById('pldn-rowCPL').textContent = '$' + cplLow + ' – $' + cplHigh + ' (avg. $' + adjustedCPL + ')';
+    document.getElementById('pldn-rowLeads').textContent = estLeads;
+    document.getElementById('pldn-rowCloseRate').textContent = Math.round(closeRate * 100) + '%';
+    document.getElementById('pldn-rowJobs').textContent = bookedJobs;
+    document.getElementById('pldn-rowJobValue').textContent = '$' + jobValue.toLocaleString();
+    document.getElementById('pldn-rowRevenue').textContent = '$' + estRevenue.toLocaleString();
+
+    let context = '';
+    if (roas >= 5) {
+      context = `At a ${roas.toFixed(1)}x return, ${data.tradeName.toLowerCase()} is one of the stronger verticals for paid ads — your job values support aggressive ad spend. The key is making sure your campaign targets high-intent searches and your intake process converts those leads into booked appointments. Most of the revenue leak in ${data.tradeName.toLowerCase()} happens after the lead comes in, not before.`;
+    } else if (roas >= 3) {
+      context = `A ${roas.toFixed(1)}x return is solid and typical for well-managed ${data.tradeName.toLowerCase()} campaigns. There's room to improve this by tightening your targeting, improving your landing page conversion rate, and — critically — making sure leads get contacted within 5 minutes. Speed-to-call is the single biggest factor in whether a lead becomes a booked job.`;
+    } else if (roas >= 1.5) {
+      context = `At ${roas.toFixed(1)}x, the economics work but there's not a lot of margin for error. This is where campaign management quality makes the biggest difference — the gap between a mediocre campaign and a well-optimized one can be 2-3x in this range. Landing page quality, negative keyword management, and lead follow-up speed all matter.`;
+    } else {
+      context = `At ${roas.toFixed(1)}x, the numbers are tight. This usually means either the ad budget needs to increase to hit a better efficiency point, or the average job value needs to be higher to justify the lead costs in ${data.tradeName.toLowerCase()}. That said, these are industry averages — a well-targeted campaign with strong follow-up can significantly outperform these benchmarks.`;
+    }
+
+    if (selectedAds === 'no') {
+      context += ` Since you're not running ads yet, expect the first 30–60 days to be a learning period where costs are higher as the campaigns gather data and optimize. The numbers above reflect what a mature, optimized campaign looks like.`;
+    }
+
+    document.getElementById('pldn-contextText').textContent = context;
+
+    document.getElementById('pldn-results').classList.add('visible');
+    setTimeout(() => {
+      document.getElementById('pldn-results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+
+  window.pldnRecalculate = function() {
+    document.getElementById('pldn-results').classList.remove('visible');
+    setTimeout(() => {
+      document.querySelector('.pldn-calc-wrapper').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  };
+})();
+</script>
+
+</body>
+</html>
